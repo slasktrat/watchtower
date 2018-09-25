@@ -72,6 +72,11 @@ func main() {
 			Name:   "no-restart",
 			Usage:  "do not restart containers",
 			EnvVar: "WATCHTOWER_NO_RESTART",
+		},		
+		cli.BoolFlag{
+			Name:   "allow-multiple",
+			Usage:  "allow multiple watchtover instances",
+			EnvVar: "WATCHTOWER_ALLOW_MULTIPLE",
 		},
 		cli.BoolFlag{
 			Name:   "cleanup",
@@ -196,6 +201,7 @@ func before(c *cli.Context) error {
 
 	cleanup = c.GlobalBool("cleanup")
 	noRestart = c.GlobalBool("no-restart")
+	allowMultiple = c..GlobalBool("allow-multiple")
 	timeout = c.GlobalDuration("stop-timeout")
 	if timeout < 0 {
 		log.Fatal("Please specify a positive value for timeout value.")
@@ -217,8 +223,10 @@ func before(c *cli.Context) error {
 func start(c *cli.Context) error {
 	names := c.Args()
 
-	if err := actions.CheckPrereqs(client, cleanup); err != nil {
-		log.Fatal(err)
+	if ! allowMultiple {
+		if err := actions.CheckPrereqs(client, cleanup); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	filter := container.BuildFilter(names, enableLabel)
